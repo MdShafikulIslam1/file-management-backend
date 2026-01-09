@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  type      ItemType // "FOLDER" | "FILE"
+  fileType  FileType? // "TEXT" | "IMAGE" (only if type is FILE)
+  content   String?  // only if text file
+  imageUrl  String?  // only if image file
+
+  parentId  String?  @db.ObjectId
+  parent    Item?    @relation("FolderItems", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Item[]   @relation("FolderItems")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ItemType {
+  FOLDER
+  FILE
+}
+
+enum FileType {
+  TEXT
+  IMAGE
+}
